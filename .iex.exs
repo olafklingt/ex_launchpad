@@ -62,11 +62,11 @@ b =
     Launchpad.LED.green(),
     fn launchpad, _view, id ->
       IO.puts("push b: #{inspect(id)}")
-      _launchpad = Launchpad.State.add_view(launchpad, c, :extrabutton)
+      _launchpad = Launchpad.State.add_view(launchpad, c, {:extrabutton, 2})
     end,
     fn launchpad, _view, id ->
       IO.puts("release b: #{inspect(id)}")
-      _launchpad = Launchpad.State.remove_view(launchpad, :extrabutton)
+      _launchpad = Launchpad.State.remove_view(launchpad, {:extrabutton, 2})
     end
   )
 

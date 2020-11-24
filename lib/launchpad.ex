@@ -6,19 +6,39 @@ defmodule Launchpad do
     Launchpad.Listener.start_link(midiin_pid, midiout_pid)
   end
 
-  @spec remove_view(atom) :: atom
+  @spec remove_view(atom | tuple) :: atom
   def remove_view(view_id) do
     GenServer.call(:launchpad, {:remove_view, view_id})
   end
 
-  @spec add_view(map) :: atom
-  def add_view(view) do
-    GenServer.call(:launchpad, {:add_view, view})
+  @spec remove_all_views_startinging_with(tuple | atom) :: atom
+  def remove_all_views_startinging_with(view_id) do
+    GenServer.call(:launchpad, {:remove_all_views_startinging_with, view_id})
   end
 
-  @spec add_view(map, atom) :: atom
+  @spec hide_all_views_startinging_with(tuple | atom) :: atom
+  def hide_all_views_startinging_with(view_id) do
+    GenServer.call(:launchpad, {:hide_all_views_startinging_with, view_id})
+  end
+
+  @spec hide_view(tuple | atom) :: atom
+  def hide_view(view_id) do
+    GenServer.call(:launchpad, {:hide_view, view_id})
+  end
+
+  @spec add_view_and_front(map) :: atom
+  def add_view_and_front(view) do
+    GenServer.call(:launchpad, {:add_view_and_front, view})
+  end
+
+  @spec add_view(map, tuple | atom) :: atom
   def add_view(view, view_id) do
     GenServer.call(:launchpad, {:add_view, view, view_id})
+  end
+
+  @spec set_view_to_front(tuple | atom) :: atom
+  def set_view_to_front(view_id) do
+    GenServer.call(:launchpad, {:set_view_to_front, view_id})
   end
 
   @spec as_id(integer, integer) :: integer
@@ -36,8 +56,8 @@ defmodule Launchpad do
     y_range = if(is_number(y), do: y..y, else: y)
 
     List.flatten(
-      Enum.map(x_range, fn x ->
-        Enum.map(y_range, fn y ->
+      Enum.map(y_range, fn y ->
+        Enum.map(x_range, fn x ->
           as_id(x, y)
         end)
       end)

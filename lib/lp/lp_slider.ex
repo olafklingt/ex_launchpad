@@ -6,19 +6,24 @@ defmodule Launchpad.Slider do
     field(:incrementArray, list, enforce: true)
     field(:background, integer, enforce: true)
     field(:action, fun, enforce: true)
+    field(:onfront, fun, enforce: true)
+    field(:onhide, fun, enforce: true)
     field(:value, integer | nil, default: nil)
     field(:default, integer, default: 0)
     field(:statevarroutine, pid | nil, default: nil)
   end
 
+  @spec new(list, list, integer, fun, fun, integer | nil, integer) :: Launchpad.Slider.t()
   def new(
         pad_ids,
         incrementArray,
         background_color,
         action,
         init_value \\ nil,
-        default_value \\ 0
-      ) do
+        default_value \\ 0,
+        options \\ []
+      )
+      when is_number(default_value) and (is_nil(init_value) or is_number(init_value)) do
     if length(pad_ids) != length(incrementArray) do
       raise "Launchpad.Slider can not be initalized with different number of pads and increments. pad_ids size: #{
               length(pad_ids)
@@ -30,22 +35,21 @@ defmodule Launchpad.Slider do
       incrementArray: incrementArray,
       background: background_color,
       action: action,
+      onfront: options[:onfront] || fn lp, _v -> lp end,
+      onhide: options[:onhide] || fn lp, _v -> lp end,
       value: init_value,
       default: default_value,
       statevarroutine: nil
     }
   end
 
-  @spec responseOn(Launchpad.State.t(), map, integer) :: {map, Launchpad.State.t()}
-  def responseOn(launchpad, view, pad_id) do
-    IO.inspect(view)
-
+  @spec responseOn(Launchpad.State.t(), integer, map, integer) :: {map, Launchpad.State.t()}
+  def responseOn(launchpad, button_id, view, _pad_id) do
     if !is_nil(view.statevarroutine) do
       IO.puts("statevarroutine should be nil")
       GenServer.call(view.statevarroutine, :return)
     end
 
-    button_id = Enum.find_index(view.pad_ids, fn x -> x == pad_id end)
     incr = Enum.at(view.incrementArray, button_id)
 
     value =
@@ -60,7 +64,7 @@ defmodule Launchpad.Slider do
     {:ok, statevarroutine} =
       Launchpad.RepeatingRoutine.start_link(
         fn {val, incr} ->
-          val = IO.inspect(max(min(val + incr, 1), 0))
+          val = max(min(val + incr, 1), 0)
           view.action.(val)
           {val, incr}
         end,
@@ -71,11 +75,34 @@ defmodule Launchpad.Slider do
     {%{view | value: value, statevarroutine: statevarroutine}, launchpad}
   end
 
-  @spec responseOff(Launchpad.State.t(), map, integer) :: {map, Launchpad.State.t()}
-  def responseOff(launchpad, view, _pad_id) do
+  @spec on_front(Launchpad.State.t(), map) :: {map, Launchpad.State.t()}
+  def on_front(launchpad, view) do
+    r = view.onfront.(launchpad, view)
+
+    if(is_map(r) && r.__struct__ == Launchpad.State) do
+      {view, r}
+    else
+      raise "Launchpad.Slider onfront result is not a Launchpad.State"
+    end
+  end
+
+  @spec on_hide(Launchpad.State.t(), map) :: {map, Launchpad.State.t()}
+  def on_hide(launchpad, view) do
+    # IO.inspect({:soh, view.onhide})
+    r = view.onhide.(launchpad, view)
+
+    if(is_map(r) && r.__struct__ == Launchpad.State) do
+      {view, r}
+    else
+      raise "Launchpad.Slider onhide result is not a Launchpad.State"
+    end
+  end
+
+  @spec responseOff(Launchpad.State.t(), integer, map, integer) :: {map, Launchpad.State.t()}
+  def responseOff(launchpad, _button_id, view, _pad_id) do
     {value, _incr} =
       if !is_nil(view.statevarroutine) do
-        IO.inspect(GenServer.call(view.statevarroutine, :return))
+        GenServer.call(view.statevarroutine, :return)
       end
 
     {%{view | value: value, statevarroutine: nil}, launchpad}
