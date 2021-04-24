@@ -1,3 +1,10 @@
+# brainstorm about better launchpad
+# state: leds[] funcs[]
+# the problem is that in that case everything i solved allready is than now part of the func that is assigned to a button
+# the launchpad pushbutton would in that case not have a struct but simply one function that would assign the release function to the funcs for the release message ...
+# but whats the benefit of this?
+# the question is much more how could one deal better with context
+
 lp = Launchpad.setup("Launchpad MIDI 1", "Launchpad MIDI 1")
 
 c =

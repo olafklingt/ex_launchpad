@@ -18,7 +18,6 @@ defmodule Launchpad.PushButton do
         onPushLED,
         onReleaseLED,
         onPushFunction,
-        # \\ &(&1 / 3),
         onReleaseFunction,
         value \\ 0,
         options \\ []
@@ -61,7 +60,6 @@ defmodule Launchpad.PushButton do
 
   @spec on_hide(Launchpad.State.t(), map) :: {map, Launchpad.State.t()}
   def on_hide(launchpad, view) do
-    # IO.inspect({:pboh, view.onhide})
     r = view.onhide.(launchpad, view)
 
     if(is_map(r) && r.__struct__ == Launchpad.State) do

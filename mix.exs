@@ -18,7 +18,7 @@ defmodule ExLaunchpad.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :typed_struct],
       applications: [:portmidi]
     ]
   end
@@ -28,8 +28,8 @@ defmodule ExLaunchpad.MixProject do
     [
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:typed_struct, "~> 0.2.0"},
-      # {:portmidi, path: "../../github/ex-portmidi/"}
-      {:portmidi, git: "https://github.com/olafklingt/ex-portmidi"}
+      {:portmidi, path: "../../github/ex-portmidi/"}
+      # {:portmidi, git: "https://github.com/olafklingt/ex-portmidi"}
     ]
   end
 end

@@ -40,7 +40,6 @@ defmodule Launchpad.ButtonArray do
 
   @spec responseOn(Launchpad.State.t(), integer, map, integer) :: {map, Launchpad.State.t()}
   def responseOn(launchpad, button_id, view, pad_id) do
-    # value = Enum.find_index(view.pad_ids, fn x -> x == pad_id end)
     value = Enum.find_index(view.pad_ids, &(&1 == pad_id))
     view = %{view | value: value}
     r = view.action.(launchpad, button_id, view, pad_id)
@@ -65,7 +64,6 @@ defmodule Launchpad.ButtonArray do
 
   @spec on_hide(Launchpad.State.t(), map) :: {map, Launchpad.State.t()}
   def on_hide(launchpad, view) do
-    # IO.inspect({:baoh, view.onhide})
     r = view.onhide.(launchpad, view)
 
     if(is_map(r) && r.__struct__ == Launchpad.State) do

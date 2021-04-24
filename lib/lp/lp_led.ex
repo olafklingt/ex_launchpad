@@ -1,13 +1,4 @@
 defmodule Launchpad.LED do
-  # use TypedStruct
-
-  # typedstruct do
-  #   field(:green, integer, enforce: false)
-  #   field(:red, integer, enforce: false)
-  #   field(:clear, integer, enforce: false)
-  #   field(:copy, integer, enforce: false)
-  # end
-
   @spec new(integer, integer, integer, integer) :: tuple
   def new(green \\ 0, red \\ 0, clear \\ 1, copy \\ 1) do
     {green, red, clear, copy}

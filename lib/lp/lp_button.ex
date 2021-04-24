@@ -44,7 +44,6 @@ defmodule Launchpad.Button do
 
   @spec on_hide(Launchpad.State.t(), map) :: {map, Launchpad.State.t()}
   def on_hide(launchpad, view) do
-    # IO.inspect({:boh, view.onhide})
     r = view.onhide.(launchpad, view)
 
     if(is_map(r) && r.__struct__ == Launchpad.State) do

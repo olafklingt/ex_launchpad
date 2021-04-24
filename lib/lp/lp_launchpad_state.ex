@@ -21,7 +21,7 @@ defmodule Launchpad.State do
   @spec reset(Launchpad.State.t()) :: Launchpad.State.t()
   def reset(launchpad) do
     PortMidi.write(launchpad.midiout_pid, {0, 0, 0})
-    # launchpad.midiout_pid(0, 0, 0)
+
     Enum.map(0..(9 * 9), fn id ->
       setLED(launchpad.midiout_pid, id, Launchpad.LED.black())
     end)
@@ -72,7 +72,6 @@ defmodule Launchpad.State do
 
     launchpad =
       Enum.reduce(list, launchpad, fn {id, _v}, launchpad ->
-        # IO.inspect({:remove_view_from_views, id})
         remove_view(launchpad, id)
       end)
 
@@ -87,23 +86,8 @@ defmodule Launchpad.State do
         end
       end)
 
-    # Enum.filter(launchpad.off_pads, fn pad ->
-    #   if(is_nil(pad)) do
-    #     false
-    #   else
-    #     {id, _v} = pad
-    #
-    #     if is_atom(id) do
-    #       false
-    #     else
-    #       List.starts_with?(Tuple.to_list(id), view_id_list)
-    #     end
-    #   end
-    # end)
-
     launchpad =
       Enum.reduce(list, launchpad, fn {id, _v}, launchpad ->
-        # IO.inspect({:remove_view_from_off_pads, id})
         remove_view(launchpad, id)
       end)
 
@@ -120,8 +104,6 @@ defmodule Launchpad.State do
           List.starts_with?(Tuple.to_list(id), view_id_list)
         end
       end)
-
-    # IO.inspect(Keyword.keys(list))
 
     Enum.reduce(list, launchpad, fn {id, _v}, launchpad ->
       hide_view(launchpad, id)
@@ -155,10 +137,7 @@ defmodule Launchpad.State do
       {view, launchpad} = apply(view.__struct__, :on_hide, [launchpad, view])
 
       if(is_nil(view_from_off_pads_tuple)) do
-        # IO.inspect({:view, view})
-        launchpad = update_pad_leds_after_remove(launchpad, view.pad_ids)
-        # IO.inspect({:at40, Enum.at(launchpad.on_pads, 40)})
-        launchpad
+        update_pad_leds_after_remove(launchpad, view.pad_ids)
       else
         IO.puts(
           "this should not happen view found for key: #{inspect(view_id)} in off_pads and on_pads"
@@ -177,24 +156,10 @@ defmodule Launchpad.State do
     {view_id, launchpad}
   end
 
-  # @spec add_view_to_front(Launchpad.State.t(), map, view_id) :: Launchpad.State.t()
-  # def add_view_to_front(launchpad, view, view_id) do
-  #   view_tuple = List.keyfind(launchpad.views, view_id, 0)
-  #
-  #   # if Keyword.has_key?(launchpad.views, view_id) do
-  #   if is_nil(view_tuple) do
-  #     IO.puts("view_id key is not found in Launchpad state: #{inspect(view_id)} ")
-  #     launchpad
-  #   else
-  #     launchpad
-  #   end
-  # end
-
   @spec set_view_to_front(Launchpad.State.t(), view_id) :: Launchpad.State.t()
   def set_view_to_front(launchpad, view_id) do
     view_tuple = List.keyfind(launchpad.views, view_id, 0)
 
-    # if Keyword.has_key?(launchpad.views, view_id) do
     if is_nil(view_tuple) do
       IO.puts("view_id key is not found in Launchpad state: #{inspect(view_id)} ")
       launchpad
@@ -214,14 +179,11 @@ defmodule Launchpad.State do
 
   @spec add_view(Launchpad.State.t(), map, view_id) :: Launchpad.State.t()
   def add_view(launchpad, view, view_id) do
-    # if Keyword.has_key?(launchpad.views, view_id) do
     if List.keymember?(launchpad.views, view_id, 0) do
       IO.puts("view_id key is duplicate choose another one: #{inspect(view_id)} ")
       launchpad
     else
-      # IO.inspect({:add_view, view_id})
       views = [{view_id, view} | launchpad.views]
-      # IO.inspect({:add_view_views, views})
       %{launchpad | views: views}
     end
   end
@@ -269,7 +231,6 @@ defmodule Launchpad.State do
 
     launchpad =
       Enum.reduce(view_ids, launchpad, fn view_id, launchpad ->
-        # view = launchpad.views[view_id]
         view_tuple = List.keyfind(launchpad.views, view_id, 0)
 
         if(!is_nil(view_tuple)) do
@@ -277,7 +238,6 @@ defmodule Launchpad.State do
           _launchpad = update_leds(launchpad, view_id, view)
         else
           # if the view is on right now and waiting for off msg
-          # view = Keyword.get(launchpad.off_pads, view_id)
           {view_id, view} = List.keyfind(launchpad.off_pads, view_id, 0)
 
           if(!is_nil(view)) do
@@ -292,9 +252,8 @@ defmodule Launchpad.State do
   @spec pop_view_from_views(Launchpad.State.t(), view_id) ::
           {view_id, Launchpad.State.t()}
   defp pop_view_from_views(launchpad, view_id) do
-    # view = launchpad.views[view_id]
     view_tuple = List.keyfind(launchpad.views, view_id, 0)
-    # launchpad = %{launchpad | views: Keyword.delete(launchpad.views, view_id)}
+
     if(is_nil(view_tuple)) do
       {nil, launchpad}
     else
@@ -316,8 +275,6 @@ defmodule Launchpad.State do
 
   @spec remove_view_id_from_pads(list[on_pad], view_id, list[pad_id]) :: list[on_pad]
   defp remove_view_id_from_pads(on_pads, view_id, pad_ids) do
-    # IO.inspect({:remove_view_id_from_pads, view_id})
-
     Enum.reduce(pad_ids, on_pads, fn pad_id, on_pads ->
       pad_stack = Enum.at(on_pads, pad_id)
       pad_stack = List.delete(pad_stack, view_id)
@@ -383,15 +340,6 @@ defmodule Launchpad.State do
     end
   end
 
-  # @spec setLED(pid, integer, integer, velocity) :: any
-  # defp setLED(midiout_pid, x, y, vel) do
-  #   if(y == 0) do
-  #     setTopLED(midiout_pid, x, vel)
-  #   else
-  #     setMatrixLED(midiout_pid, x, y, vel)
-  #   end
-  # end
-
   @spec xyMIDINode(integer, integer) :: integer
   defp xyMIDINode(x, y) do
     x + y * 16
@@ -416,7 +364,6 @@ defmodule Launchpad.State do
   defp update_led(launchpad, pad_id, vel) do
     if(Enum.at(launchpad.out_pads, pad_id) != vel) do
       out_pads = List.replace_at(launchpad.out_pads, pad_id, vel)
-      # {x, y} = as_xy(pad_id)
       setLED(launchpad.midiout_pid, pad_id, vel)
       %{launchpad | out_pads: out_pads}
     else
@@ -431,13 +378,11 @@ defmodule Launchpad.State do
 
   @spec update_leds(Launchpad.State.t(), view_id, map) :: Launchpad.State.t()
   defp update_leds(launchpad, view_id, view) when is_map(view) do
-    # IO.inspect({:ul, launchpad, view_id, view})
     pad_ids_n_vel = apply(view.__struct__, :getLEDs, [launchpad, view])
 
     _launchpad =
       Enum.reduce(pad_ids_n_vel, launchpad, fn {pad_id, vel}, launchpad ->
         if is_view_top?(launchpad, view_id, pad_id) do
-          # :timer.sleep(1)
           update_led(launchpad, pad_id, vel)
         else
           launchpad
@@ -450,20 +395,15 @@ defmodule Launchpad.State do
     pad_stack = Enum.at(launchpad.on_pads, pad_id)
 
     if(length(pad_stack) == 0) do
-      # IO.puts("no view on pad_id: #{pad_id} in on_pads")
       launchpad
     else
       [view_id | _] = pad_stack
-      # {view, views} = Keyword.pop(launchpad.views, view_id)
       view_tuple = List.keyfind(launchpad.views, view_id, 0)
       views = List.keydelete(launchpad.views, view_id, 0)
-
-      # IO.inspect({:lplps325, view, views})
 
       if(!is_nil(view_tuple)) do
         {view_id, view} = view_tuple
         launchpad = %{launchpad | views: views}
-        # l_id = Enum.find_index(view.pad_ids, pad_id)
         button_id = Enum.find_index(view.pad_ids, fn x -> x == pad_id end)
 
         {view, launchpad} =
@@ -474,7 +414,6 @@ defmodule Launchpad.State do
         off_pads = List.replace_at(launchpad.off_pads, pad_id, {view_id, view})
         %{launchpad | off_pads: off_pads}
       else
-        # IO.puts("don't handle two triggers on the same view")
         launchpad
       end
     end
@@ -487,7 +426,6 @@ defmodule Launchpad.State do
 
     if(!is_nil(view_tuple)) do
       {view_id, view} = view_tuple
-      # l_id = Enum.find_index(view.pad_ids, pad_id)
       button_id = Enum.find_index(view.pad_ids, fn x -> x == pad_id end)
 
       {view, launchpad} =
@@ -498,21 +436,17 @@ defmodule Launchpad.State do
 
       launchpad =
         if(is_view_alive) do
-          # IO.puts("view is alive: #{inspect(view_id)} #{pad_id}")
-
           views = [{view_id, view} | launchpad.views]
           launchpad = %{launchpad | views: views}
 
           _launchpad = update_leds(launchpad, view_id, view)
         else
-          # IO.puts("view is not alive: #{inspect(view_id)} #{pad_id}")
           pad_ids = view.pad_ids
           update_pad_leds_after_remove(launchpad, pad_ids)
         end
 
       %{launchpad | off_pads: List.replace_at(launchpad.off_pads, pad_id, nil)}
     else
-      # IO.puts("no view on pad_id: #{pad_id} in off_pads")
       launchpad
     end
   end

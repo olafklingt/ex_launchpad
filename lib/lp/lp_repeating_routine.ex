@@ -3,7 +3,7 @@ defmodule Launchpad.RepeatingRoutine do
 
   @spec start_link(fun, tuple, integer) :: {atom, pid}
   def start_link(func, func_state, interval) do
-    GenServer.start_link(__MODULE__, {func, func_state, interval}, name: __MODULE__)
+    GenServer.start_link(__MODULE__, {func, func_state, interval})
   end
 
   @impl true
