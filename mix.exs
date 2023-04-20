@@ -29,7 +29,7 @@ defmodule ExLaunchpad.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:typed_struct, "~> 0.2.0"},
       #{:portmidi, path: "../../github/ex-portmidi/"}
-      {:portmidi, git: "git#github.com:olafklingt/ex-portmidi"}
+      {:portmidi, git: "git@github.com:olafklingt/ex-portmidi"}
     ]
   end
 end
